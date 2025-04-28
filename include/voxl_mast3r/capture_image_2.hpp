@@ -18,6 +18,8 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 
+#define DISTANCE_THRESHOLD 1 // Distance threshold in meters
+
 /**
  * @brief Class to capture images from a camera and save them based on drone trajectory.
  * This class subscribes to the camera topic and the vehicle odometry topic.
@@ -68,6 +70,8 @@ private:
     bool odometry_received_;
     px4_msgs::msg::VehicleOdometry last_odometry_;
     std::string camera_topic_;
+    float distance;
+    cv_bridge::CvImagePtr cv_ptr;
 };
 
 #endif
