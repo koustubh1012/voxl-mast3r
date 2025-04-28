@@ -12,6 +12,46 @@ find_package(px4_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(cv_bridge REQUIRED)
+
+include_directories(include/voxl_mast3r)
+
+# add the executable
+add_executable(voxl_mast3r src/capture_image_2.cpp)
+
+# link the libraries
+target_link_libraries(voxl_mast3r
+  ${OpenCV_LIBS}
+  ${cv_bridge_LIBRARIES}
+)
+target_include_directories(voxl_mast3r
+  PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+ament_target_dependencies(voxl_mast3r
+  rclcpp
+  px4_msgs
+  nav_msgs
+  geometry_msgs
+  sensor_msgs
+  OpenCV
+  cv_bridge
+)
+# install the executable
+install(TARGETS
+  voxl_mast3r
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+# install the hpp files
+install(DIRECTORY include/
+  DESTINATION include/
+)
+
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
