@@ -17,8 +17,11 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 #include <string>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
 
-#define DISTANCE_THRESHOLD 1 // Distance threshold in meters
+#define DISTANCE_THRESHOLD 4.0 // Distance threshold in meters
+#define YAW_THRESHOLD 0.785398 // Yaw threshold in radians
 
 /**
  * @brief Class to capture images from a camera and save them based on drone trajectory.
@@ -62,6 +65,12 @@ private:
      */
     void saveImage(const cv::Mat &image, const std::string &filename);
 
+    /**
+     * @brief Converts quaternion to Euler angles.
+     * @param msg The received odometry message.
+     */
+    void quaternionToEuler(const px4_msgs::msg::VehicleOdometry::SharedPtr msg);
+
     // Member variables
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr image_subscriber_;
     rclcpp::Subscription<px4_msgs::msg::VehicleOdometry>::SharedPtr odometry_subscriber_;
@@ -72,6 +81,7 @@ private:
     std::string camera_topic_;
     float distance;
     cv_bridge::CvImagePtr cv_ptr;
+    double roll, pitch, yaw, prev_yaw;
 };
 
 #endif

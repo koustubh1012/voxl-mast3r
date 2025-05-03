@@ -24,6 +24,11 @@ CaptureImage2::CaptureImage2()
 
     // Initialize odometry data
     odometry_received_ = false;
+    roll = 0.0;
+    pitch = 0.0;
+    yaw = 0.0;
+    distance = 0.0;
+    prev_yaw = 0.0;
 }
 
 CaptureImage2::~CaptureImage2()
@@ -50,6 +55,10 @@ void CaptureImage2::odometryCallback(const px4_msgs::msg::VehicleOdometry::Share
         RCLCPP_INFO(this->get_logger(), "First odometry data received: %f, %f, %f", 
                     msg->position[0], msg->position[1], msg->position[2]);
     }
+
+    // Convert quaternion to Euler angles
+    quaternionToEuler(msg);
+
     // Check if the drone has moved more than the distance threshold
     distance = sqrt(pow(msg->position[0] - last_odometry_.position[0], 2) +
                      pow(msg->position[1] - last_odometry_.position[1], 2) +
@@ -62,6 +71,15 @@ void CaptureImage2::odometryCallback(const px4_msgs::msg::VehicleOdometry::Share
         last_odometry_ = *msg; // Update the last odometry data
         image_count_++;
     }
+    else if (yaw - prev_yaw > YAW_THRESHOLD) {
+        // Save the image with the current timestamp and odometry data
+        std::string filename = save_directory_ + "/image_" + std::to_string(image_count_) + ".jpg";
+        saveImage(cv_ptr->image, filename);
+        last_odometry_ = *msg; // Update the last odometry data
+        image_count_++;
+        prev_yaw = yaw; // Update the previous yaw
+    }
+
 }
 
 void CaptureImage2::saveImage(const cv::Mat &image, const std::string &filename)
@@ -72,6 +90,13 @@ void CaptureImage2::saveImage(const cv::Mat &image, const std::string &filename)
     } else {
         RCLCPP_INFO(this->get_logger(), "Saved image: %s", filename.c_str());
     }
+}
+
+void CaptureImage2::quaternionToEuler(const px4_msgs::msg::VehicleOdometry::SharedPtr msg)
+{
+    // Convert quaternion to Euler angles
+    tf2::Quaternion q(msg->q[1], msg->q[2], msg->q[3], msg->q[0]);
+    tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
 }
 
 int main(int argc, char **argv)

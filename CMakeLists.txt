@@ -14,6 +14,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(tf2 REQUIRED)
 
 include_directories(include/voxl_mast3r)
 
@@ -39,6 +40,7 @@ ament_target_dependencies(voxl_mast3r
   sensor_msgs
   OpenCV
   cv_bridge
+  tf2
 )
 # install the executable
 install(TARGETS
