@@ -12,13 +12,15 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
-#include "px4_msgs/msg/vehicle_odometry.hpp"
 #include <sensor_msgs/msg/image.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
+#include <cmath>
+
+#include "px4_msgs/msg/vehicle_odometry.hpp"
 
 #define DISTANCE_THRESHOLD 4.0 // Distance threshold in meters
 #define YAW_THRESHOLD 0.785398 // Yaw threshold in radians

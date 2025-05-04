@@ -65,13 +65,21 @@ void CaptureImage2::odometryCallback(const px4_msgs::msg::VehicleOdometry::Share
                      pow(msg->position[2] - last_odometry_.position[2], 2));
     // RCLCPP_INFO(this->get_logger(), "Distance: %f", distance);
     if (distance > DISTANCE_THRESHOLD) {
+        if (!cv_ptr || cv_ptr->image.empty()) {
+            RCLCPP_WARN(this->get_logger(), "No image data available to save.");
+            return;
+        }        
         // Save the image with the current timestamp and odometry data
         std::string filename = save_directory_ + "/image_" + std::to_string(image_count_) + ".jpg";
         saveImage(cv_ptr->image, filename);
         last_odometry_ = *msg; // Update the last odometry data
         image_count_++;
     }
-    else if (yaw - prev_yaw > YAW_THRESHOLD) {
+    else if (abs(yaw - prev_yaw) > YAW_THRESHOLD) {
+        if (!cv_ptr || cv_ptr->image.empty()) {
+            RCLCPP_WARN(this->get_logger(), "No image data available to save.");
+            return;
+        }        
         // Save the image with the current timestamp and odometry data
         std::string filename = save_directory_ + "/image_" + std::to_string(image_count_) + ".jpg";
         saveImage(cv_ptr->image, filename);
