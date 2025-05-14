@@ -38,24 +38,29 @@ class ImageCaptureNode(Node):
         # Check if the first image has been received
         if not self.first_image_received and not cv_image is None:
             self.image1 = cv_image
+            # self.image1 = cv2.imread('/home/koustubh/test/image_3.jpg')
             self.first_image_received = True
             self.get_logger().info('First image received')
-            self.save_image(self.image1, f'first_image_{self.image_counter}.jpg')
+            self.save_image(self.image1, f'image_{self.image_counter}.jpg')
             self.image_counter += 1
-            cv2.imshow('First Image', self.image1)
-            cv2.waitKey(1)
             return
         
         # If the first image has been received, compare with the second image
         if self.first_image_received and not cv_image is None:
             self.image2 = cv_image
+            cv2.imshow('First Image', self.image1)
             cv2.imshow('Second Image', self.image2)
             cv2.waitKey(1)
-            start_time = time.time()
-            self.compare_images()
-            end_time = time.time()
-            elapsed_time = end_time - start_time
-            self.get_logger().info(f'Comparison time: {elapsed_time:.2f} seconds')
+            # start_time = time.time()
+            good_matches = self.compare_images()
+            if good_matches < 50:
+                self.get_logger().info(f'Found {good_matches} good matches')
+                self.save_image(self.image2, f'image_{self.image_counter}.jpg')
+                self.image1 = self.image2
+                self.image_counter += 1
+            # end_time = time.time()
+            # elapsed_time = end_time - start_time
+            # self.get_logger().info(f'Comparison time: {elapsed_time:.2f} seconds')
 
         
     def is_blurry(self, image, threshold=375):
@@ -79,13 +84,12 @@ class ImageCaptureNode(Node):
         matches = self.bf.match(des1, des2)
         # Sort matches based on distance
         matches = sorted(matches, key=lambda x: x.distance)
-        # Display the number of matches
-        self.get_logger().info(f'Number of matches: {len(matches)}')
         # Define a distance threshold for "good" matches
         GOOD_MATCH_THRESHOLD = 50
         # Filter matches based on the distance threshold
         good_matches = [m for m in matches if m.distance < GOOD_MATCH_THRESHOLD]
-        self.get_logger().info(f'Number of good matches: {len(good_matches)}')
+        # self.get_logger().info(f'Number of good matches: {len(good_matches)}')
+        return len(good_matches)
     
 def main(args=None):
     rclpy.init(args=args)
