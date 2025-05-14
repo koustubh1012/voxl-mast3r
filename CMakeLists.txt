@@ -15,6 +15,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 include_directories(include/voxl_mast3r)
 
@@ -45,6 +46,12 @@ ament_target_dependencies(voxl_mast3r
 # install the executable
 install(TARGETS
   voxl_mast3r
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+# install python executable
+install(PROGRAMS
+  scripts/capture_image.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

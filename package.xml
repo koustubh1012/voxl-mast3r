@@ -18,6 +18,9 @@
   <depend>image_transport</depend>
   <depend>OpenCV</depend>
   <depend>tf2</depend>
+  <depend>ament_cmake</depend>
+  <depend>ament_python</depend>
+  <depend>amenct_cmake_index</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
