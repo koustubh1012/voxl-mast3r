@@ -23,8 +23,8 @@ class ImageCaptureNode(Node):
         self.image1 = None
         self.image2 = None
         self.first_image_received = False
-        self.sift = cv2.SIFT_create()
-        self.flann = cv2.FlannBasedMatcher(dict(algorithm=1, trees=5), dict(checks=50))
+        self.orb = cv2.ORB_create()
+        self.bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
     def listener_callback(self, msg):
         # Convert ROS Image message to OpenCV image
@@ -72,19 +72,20 @@ class ImageCaptureNode(Node):
         self.get_logger().info(f'Saved image: {self.image_save_path}{image_name}')
     
     def compare_images(self):
-        # Compare the two images using SIFT
-        kp1, des1 = self.sift.detectAndCompute(self.image1, None)
-        kp2, des2 = self.sift.detectAndCompute(self.image2, None)
-        matches = self.flann.knnMatch(des1, des2, k=2)
-        # Apply Lowe's ratio test
-        good_matches = []
-        for m, n in matches:
-            if m.distance < 0.7 * n.distance:
-                good_matches.append(m)
-        # Display the matches
-        if len(good_matches) > 0:
-            self.get_logger().info(f'Found {len(good_matches)} good matches')
-
+        # Compare the two images using ORB
+        kp1, des1 = self.orb.detectAndCompute(self.image1, None)
+        kp2, des2 = self.orb.detectAndCompute(self.image2, None)
+        # Match descriptors using BFMatcher
+        matches = self.bf.match(des1, des2)
+        # Sort matches based on distance
+        matches = sorted(matches, key=lambda x: x.distance)
+        # Display the number of matches
+        self.get_logger().info(f'Number of matches: {len(matches)}')
+        # Define a distance threshold for "good" matches
+        GOOD_MATCH_THRESHOLD = 50
+        # Filter matches based on the distance threshold
+        good_matches = [m for m in matches if m.distance < GOOD_MATCH_THRESHOLD]
+        self.get_logger().info(f'Number of good matches: {len(good_matches)}')
     
 def main(args=None):
     rclpy.init(args=args)
