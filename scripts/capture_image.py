@@ -17,7 +17,7 @@ class ImageCaptureNode(Node):
             10)
         self.bridge = CvBridge()
         self.image_counter = 1
-        self.declare_parameter('image_save_path', '/home/user/images')
+        self.declare_parameter('image_save_path', '/home/user/images/')
         self.image_save_path = self.get_parameter('image_save_path').get_parameter_value().string_value
         self.get_logger().info(f'Image save path: {self.image_save_path}')
         self.image1 = None
