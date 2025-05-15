@@ -48,8 +48,8 @@ class ImageCaptureNode(Node):
         # If the first image has been received, compare with the second image
         if self.first_image_received and not cv_image is None:
             self.image2 = cv_image
-            cv2.imshow('First Image', self.image1)
-            cv2.imshow('Second Image', self.image2)
+            cv2.imshow('Refrence Image', self.image1)
+            cv2.imshow('Live Feed', self.image2)
             cv2.waitKey(1)
             # start_time = time.time()
             good_matches = self.compare_images()
