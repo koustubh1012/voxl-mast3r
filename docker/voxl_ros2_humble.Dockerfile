@@ -55,6 +55,14 @@ RUN mkdir -p ros2_ws/src \
     && cd px4_msgs \
     && git checkout release/1.14
 
+# Build the workspace
+RUN cd ros2_ws \
+    && source /opt/ros/humble/setup.bash \
+    && colcon build
+
+RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc && \
+    echo "source /root/ros2_ws/install/setup.bash" >> /root/.bashrc
+
 # # Install Lightglue dependencies
 # RUN pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu \
 #     && pip install opencv-python \
@@ -71,3 +79,10 @@ RUN mkdir -p ros2_ws/src \
 # # Download LightGlue SIFT weights (v0.1_arxiv)
 # RUN curl -L -o /root/.cache/torch/hub/checkpoints/sift_lightglue_v0-1_arxiv.pth \
 #     https://github.com/cvg/LightGlue/releases/download/v0.1_arxiv/sift_lightglue.pth
+
+# Copy and set permissions for entrypoint
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"] 
+CMD ["bash"]
