@@ -55,19 +55,19 @@ RUN mkdir -p ros2_ws/src \
     && cd px4_msgs \
     && git checkout release/1.14
 
-# Install Lightglue dependencies
-RUN pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu \
-    && pip install opencv-python \
-    && pip install kornia \
-    && pip install matplotlib
+# # Install Lightglue dependencies
+# RUN pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu \
+#     && pip install opencv-python \
+#     && pip install kornia \
+#     && pip install matplotlib
 
-# Install LightGlue
-RUN git clone https://github.com/cvg/LightGlue.git && cd LightGlue \
-    && python3 -m pip install .
+# # Install LightGlue
+# RUN git clone https://github.com/cvg/LightGlue.git && cd LightGlue \
+#     && python3 -m pip install .
 
-# Create torch cache directory
-RUN mkdir -p /root/.cache/torch/hub/checkpoints
+# # Create torch cache directory
+# RUN mkdir -p /root/.cache/torch/hub/checkpoints
 
-# Download LightGlue SIFT weights (v0.1_arxiv)
-RUN curl -L -o /root/.cache/torch/hub/checkpoints/sift_lightglue_v0-1_arxiv.pth \
-    https://github.com/cvg/LightGlue/releases/download/v0.1_arxiv/sift_lightglue.pth
+# # Download LightGlue SIFT weights (v0.1_arxiv)
+# RUN curl -L -o /root/.cache/torch/hub/checkpoints/sift_lightglue_v0-1_arxiv.pth \
+#     https://github.com/cvg/LightGlue/releases/download/v0.1_arxiv/sift_lightglue.pth
