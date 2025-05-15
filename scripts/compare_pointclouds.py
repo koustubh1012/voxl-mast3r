@@ -179,34 +179,155 @@
 #     main()
 
 
+# import open3d as o3d
+# import trimesh
+# import numpy as np
+# from scipy.spatial import cKDTree
+
+
+# def glb_to_point_cloud(glb_path, num_points=100000):
+#     mesh = trimesh.load(glb_path)
+#     if not isinstance(mesh, trimesh.Trimesh):
+#         mesh = mesh.to_geometry()  # updated for deprecation
+#     points, _ = trimesh.sample.sample_surface(mesh, num_points)
+#     pcd = o3d.geometry.PointCloud()
+#     pcd.points = o3d.utility.Vector3dVector(points)
+#     return pcd
+
+
+# def downsample_pcd(pcd, voxel_size):
+#     pcd_down = pcd.voxel_down_sample(voxel_size)
+#     pcd_down.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=voxel_size * 2, max_nn=30))
+#     return pcd_down
+
+
+# def compute_fpfh(pcd_down, voxel_size):
+#     return o3d.pipelines.registration.compute_fpfh_feature(
+#         pcd_down,
+#         o3d.geometry.KDTreeSearchParamHybrid(radius=voxel_size * 5, max_nn=100)
+#     )
+
+
+# def global_registration(source, target, voxel_size):
+#     src_down = downsample_pcd(source, voxel_size)
+#     tgt_down = downsample_pcd(target, voxel_size)
+#     src_fpfh = compute_fpfh(src_down, voxel_size)
+#     tgt_fpfh = compute_fpfh(tgt_down, voxel_size)
+
+#     result = o3d.pipelines.registration.registration_ransac_based_on_feature_matching(
+#         src_down, tgt_down, src_fpfh, tgt_fpfh, mutual_filter=True,
+#         max_correspondence_distance=voxel_size * 2,
+#         estimation_method=o3d.pipelines.registration.TransformationEstimationPointToPoint(False),
+#         ransac_n=4,
+#         checkers=[
+#             o3d.pipelines.registration.CorrespondenceCheckerBasedOnEdgeLength(0.9),
+#             o3d.pipelines.registration.CorrespondenceCheckerBasedOnDistance(voxel_size * 2)
+#         ],
+#         criteria=o3d.pipelines.registration.RANSACConvergenceCriteria(400000, 500)
+#     )
+#     return result.transformation
+
+
+# def refine_with_icp(source, target, initial_transform, voxel_size):
+#     source.transform(initial_transform)
+#     result = o3d.pipelines.registration.registration_icp(
+#         source, target, voxel_size,
+#         np.identity(4),
+#         o3d.pipelines.registration.TransformationEstimationPointToPoint()
+#     )
+#     print("ICP Fitness:", result.fitness)
+#     print("ICP Inlier RMSE:", result.inlier_rmse)
+#     source.transform(result.transformation)
+#     return source
+
+
+# def chamfer_distance(pcd1, pcd2):
+#     p1 = np.asarray(pcd1.points)
+#     p2 = np.asarray(pcd2.points)
+#     tree1 = cKDTree(p1)
+#     tree2 = cKDTree(p2)
+#     dist1, _ = tree1.query(p2)
+#     dist2, _ = tree2.query(p1)
+#     return np.mean(dist1**2) + np.mean(dist2**2)
+
+
+# def hausdorff_distance(pcd1, pcd2):
+#     p1 = np.asarray(pcd1.points)
+#     p2 = np.asarray(pcd2.points)
+#     tree1 = cKDTree(p1)
+#     tree2 = cKDTree(p2)
+#     dist1, _ = tree1.query(p2)
+#     dist2, _ = tree2.query(p1)
+#     return max(np.max(dist1), np.max(dist2))
+
+
+# def visualize(pcd1, pcd2, filename="comparison.png"):
+#     vis = o3d.visualization.Visualizer()
+#     vis.create_window(visible=False)
+#     pcd1.paint_uniform_color([1, 0, 0])  # Red
+#     pcd2.paint_uniform_color([0, 1, 0])  # Green
+#     vis.add_geometry(pcd1)
+#     vis.add_geometry(pcd2)
+#     vis.poll_events()
+#     vis.update_renderer()
+#     vis.capture_screen_image(filename)
+#     vis.destroy_window()
+#     print(f"Saved visualization to {filename}")
+#     o3d.visualization.draw_geometries([pcd1, pcd2])
+
+
+# def main():
+
+#     model_a_path = "/home/koustubh/Downloads/lab_aprroach1.glb"
+#     model_b_path = "/home/koustubh/Downloads/lab_approach2.glb"
+#     voxel_size = 0.02  # tune this if needed
+
+#     print("Loading and sampling point clouds...")
+#     pcd_A = glb_to_point_cloud(model_a_path)
+#     pcd_B = glb_to_point_cloud(model_b_path)
+
+#     print("Registering point clouds...")
+#     transform = global_registration(pcd_A, pcd_B, voxel_size)
+#     pcd_A = refine_with_icp(pcd_A, pcd_B, transform, voxel_size)
+
+#     print("Computing metrics...")
+#     cd = chamfer_distance(pcd_A, pcd_B)
+#     hd = hausdorff_distance(pcd_A, pcd_B)
+#     print(f"Chamfer Distance: {cd:.6f}")
+#     print(f"Hausdorff Distance: {hd:.6f}")
+
+#     print("Saving comparison image...")
+#     visualize(pcd_A, pcd_B)
+
+
+# if __name__ == "__main__":
+#     main()
+
 import open3d as o3d
 import trimesh
 import numpy as np
 from scipy.spatial import cKDTree
-
+import copy
 
 def glb_to_point_cloud(glb_path, num_points=100000):
     mesh = trimesh.load(glb_path)
     if not isinstance(mesh, trimesh.Trimesh):
-        mesh = mesh.to_geometry()  # updated for deprecation
+        mesh = mesh.to_geometry()
     points, _ = trimesh.sample.sample_surface(mesh, num_points)
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(points)
     return pcd
-
 
 def downsample_pcd(pcd, voxel_size):
     pcd_down = pcd.voxel_down_sample(voxel_size)
     pcd_down.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=voxel_size * 2, max_nn=30))
     return pcd_down
 
-
 def compute_fpfh(pcd_down, voxel_size):
     return o3d.pipelines.registration.compute_fpfh_feature(
         pcd_down,
         o3d.geometry.KDTreeSearchParamHybrid(radius=voxel_size * 5, max_nn=100)
     )
-
 
 def global_registration(source, target, voxel_size):
     src_down = downsample_pcd(source, voxel_size)
@@ -227,7 +348,6 @@ def global_registration(source, target, voxel_size):
     )
     return result.transformation
 
-
 def refine_with_icp(source, target, initial_transform, voxel_size):
     source.transform(initial_transform)
     result = o3d.pipelines.registration.registration_icp(
@@ -240,7 +360,6 @@ def refine_with_icp(source, target, initial_transform, voxel_size):
     source.transform(result.transformation)
     return source
 
-
 def chamfer_distance(pcd1, pcd2):
     p1 = np.asarray(pcd1.points)
     p2 = np.asarray(pcd2.points)
@@ -250,7 +369,6 @@ def chamfer_distance(pcd1, pcd2):
     dist2, _ = tree2.query(p1)
     return np.mean(dist1**2) + np.mean(dist2**2)
 
-
 def hausdorff_distance(pcd1, pcd2):
     p1 = np.asarray(pcd1.points)
     p2 = np.asarray(pcd2.points)
@@ -259,7 +377,6 @@ def hausdorff_distance(pcd1, pcd2):
     dist1, _ = tree1.query(p2)
     dist2, _ = tree2.query(p1)
     return max(np.max(dist1), np.max(dist2))
-
 
 def visualize(pcd1, pcd2, filename="comparison.png"):
     vis = o3d.visualization.Visualizer()
@@ -275,30 +392,67 @@ def visualize(pcd1, pcd2, filename="comparison.png"):
     print(f"Saved visualization to {filename}")
     o3d.visualization.draw_geometries([pcd1, pcd2])
 
+def try_flips_and_align(source, target, voxel_size):
+    flips = {
+        "none": np.eye(4),
+        "flip_x": np.diag([-1, 1, 1, 1]),
+        "flip_y": np.diag([1, -1, 1, 1]),
+        "flip_z": np.diag([1, 1, -1, 1]),
+        "rotate_180_y": np.vstack((
+            np.hstack((o3d.geometry.get_rotation_matrix_from_xyz((0, np.pi, 0)), np.zeros((3, 1)))),
+            [0, 0, 0, 1]
+        )),
+        "rotate_180_z": np.vstack((
+            np.hstack((o3d.geometry.get_rotation_matrix_from_xyz((0, 0, np.pi)), np.zeros((3, 1)))),
+            [0, 0, 0, 1]
+        ))
+    }
+
+    best_fitness = -1
+    best_source = None
+
+    print("Trying different initial flips...")
+
+    for name, transform in flips.items():
+        print(f"Testing flip: {name}")
+        temp_source = copy.deepcopy(source)
+        temp_source.transform(transform)
+
+
+        try:
+            init_transform = global_registration(temp_source, target, voxel_size)
+            aligned = refine_with_icp(temp_source, target, init_transform, voxel_size)
+            dist = chamfer_distance(aligned, target)
+            print(f"{name}: Chamfer Distance = {dist:.4f}")
+            if dist < best_fitness or best_fitness < 0:
+                best_fitness = dist
+                best_source = aligned
+        except Exception as e:
+            print(f"Failed on {name}: {e}")
+
+    return best_source
 
 def main():
-
     model_a_path = "/home/koustubh/Downloads/lab_aprroach1.glb"
     model_b_path = "/home/koustubh/Downloads/lab_approach2.glb"
-    voxel_size = 0.02  # tune this if needed
+    voxel_size = 0.02
 
     print("Loading and sampling point clouds...")
     pcd_A = glb_to_point_cloud(model_a_path)
     pcd_B = glb_to_point_cloud(model_b_path)
 
-    print("Registering point clouds...")
-    transform = global_registration(pcd_A, pcd_B, voxel_size)
-    pcd_A = refine_with_icp(pcd_A, pcd_B, transform, voxel_size)
+    print("Auto-flipping and aligning...")
+    aligned_A = try_flips_and_align(pcd_A, pcd_B, voxel_size)
 
     print("Computing metrics...")
-    cd = chamfer_distance(pcd_A, pcd_B)
-    hd = hausdorff_distance(pcd_A, pcd_B)
+    cd = chamfer_distance(aligned_A, pcd_B)
+    hd = hausdorff_distance(aligned_A, pcd_B)
     print(f"Chamfer Distance: {cd:.6f}")
     print(f"Hausdorff Distance: {hd:.6f}")
 
     print("Saving comparison image...")
-    visualize(pcd_A, pcd_B)
-
+    visualize(aligned_A, pcd_B)
 
 if __name__ == "__main__":
     main()
+
