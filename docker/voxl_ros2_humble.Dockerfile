@@ -105,5 +105,7 @@ RUN echo "source /opt/ros/humble/setup.bash" >> /home/user/.bashrc && \
 
 COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
 
+RUN mkdir images
+
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["bash"]
