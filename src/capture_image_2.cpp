@@ -4,7 +4,7 @@ CaptureImage2::CaptureImage2()
     : Node("capture_image_2"), image_count_(0)
 {
     // Initialize parameters
-    this->declare_parameter<std::string>("save_directory", "/home/koustubh/test");
+    this->declare_parameter<std::string>("save_directory", "/home/user/images");
     this->declare_parameter<std::string>("camera_topic", "/hires_small_color");
 
     this->get_parameter("save_directory", save_directory_);
