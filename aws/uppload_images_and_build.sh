@@ -2,7 +2,7 @@
 IMAGES_DIR=/home/user/images
 ZIP_NAME=images_$(date +%Y%m%d_%H%M%S).tar.gz
 EC2_USER=ubuntu
-EC2_IP=54.196.136.143
+EC2_IP=54.227.65.94
 
 chmod 400 aerial-rob.pem
 
